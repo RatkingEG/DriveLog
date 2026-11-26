@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DriveLog — License Hours Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth Dark Mode Theme Overrides */
+        body, header, section, input, button, div {
+            transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+        }
+        body.dark-mode {
+            background-color: #090d16;
+            color: #f1f5f9;
+        }
+        body.dark-mode header {
+            background-color: #0f172a;
+            border-color: #1e293b;
+        }
+        body.dark-mode .bg-white {
+            background-color: #0f172a !important;
+        }
+        body.dark-mode .bg-slate-50,
+        body.dark-mode .bg-slate-50\/60,
+        body.dark-mode .bg-slate-50\/70 {
+            background-color: #162033 !important;
+        }
+        body.dark-mode .bg-slate-100 {
+            background-color: #1e293b !important;
+        }
+        body.dark-mode .border-slate-100,
+        body.dark-mode .border-slate-200,
+        body.dark-mode .border-slate-200\/80,
+        body.dark-mode .border-slate-300 {
+            border-color: #263349 !important;
+        }
+        body.dark-mode .text-slate-900 {
+            color: #f8fafc !important;
+        }
+        body.dark-mode .text-slate-800 {
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .text-slate-700 {
+            color: #cbd5e1 !important;
+        }
+        body.dark-mode .text-slate-600 {
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .text-slate-500 {
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .text-slate-400 {
+            color: #64748b !important;
+        }
+        body.dark-mode .slider-pill-light {
+            background-color: #334155 !important;
+            border-color: #475569 !important;
+        }
+        body.dark-mode #typeSliderPill.day-active {
+            background-color: #334155 !important;
+            border-color: #f59e0b !important;
+        }
+        body.dark-mode .bg-blue-50 {
+            background-color: rgba(37, 99, 235, 0.18) !important;
+        }
+        body.dark-mode .bg-indigo-50 {
+            background-color: rgba(79, 70, 229, 0.2) !important;
+        }
+        body.dark-mode .bg-emerald-50,
+        body.dark-mode .bg-emerald-50\/40 {
+            background-color: rgba(16, 185, 129, 0.16) !important;
+        }
+        body.dark-mode .bg-amber-50 {
+            background-color: rgba(245, 158, 11, 0.16) !important;
+        }
+        body.dark-mode .bg-rose-50 {
+            background-color: rgba(244, 63, 94, 0.16) !important;
+        }
+        body.dark-mode .text-amber-800,
+        body.dark-mode .text-amber-700 {
+            color: #fbbf24 !important;
+        }
+        body.dark-mode .text-indigo-700 {
+            color: #a5b4fc !important;
+        }
+        body.dark-mode .text-emerald-700 {
+            color: #34d399 !important;
+        }
+        body.dark-mode .text-blue-600 {
+            color: #60a5fa !important;
+        }
+        body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        /* Weekly Goal Review Slide Animations */
+        @keyframes weekSlideFromRight {
+            from { opacity: 0; transform: translateX(18px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes weekSlideFromLeft {
+            from { opacity: 0; transform: translateX(-18px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .animate-week-next {
+            animation: weekSlideFromRight 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .animate-week-prev {
+            animation: weekSlideFromLeft 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
+                    <!-- Car / Steering Wheel SVG Icon -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                        <path d="M12 14v7"></path>
+                        <path d="M10 12H3.5"></path>
+                        <path d="M14 12h6.5"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900 leading-tight">DriveLog</h1>
+                    <p class="text-xs text-slate-500 font-medium">50-Hour License Tracker</p>
+                </div>
+            </div>
+
+            <!-- Top Navigation Tabs with Smooth Sliding Pill -->
+            <nav aria-label="Primary Navigation" class="relative grid grid-cols-3 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <div id="navTabSlider"
+                    class="slider-pill-light absolute top-1 bottom-1 left-1 w-[calc(33.333%-0.25rem)] bg-white rounded-lg shadow-sm border border-slate-200/80 transition-transform duration-300 ease-out pointer-events-none">
+                </div>
+                <button type="button" id="navTabHome" onclick="switchTab('home')"
+                    class="relative z-10 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-900 transition-colors duration-300 text-center">
+                    Home
+                </button>
+                <button type="button" id="navTabInsights" onclick="switchTab('insights')"
+                    class="relative z-10 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                    Insights
+                </button>
+                <button type="button" id="navTabSettings" onclick="switchTab('settings')"
+                    class="relative z-10 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                    Settings
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+        <!-- Toast Notification Banner -->
+        <div id="toastBanner" class="hidden fixed bottom-5 right-5 z-50 max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 transition-all duration-300">
+            <span id="toastIcon" class="text-emerald-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </span>
+            <p id="toastMessage" class="text-sm font-medium">Drive logged successfully!</p>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: HOME                                -->
+        <!-- ========================================== -->
+        <div id="tabViewHome" class="space-y-6">
+
+            <!-- Top KPI Progress Cards Grid -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                
+                <!-- Card 1: Total Hours Goal (50h) -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">Total Goal</span>
+                            <span id="totalPercentBadge" class="text-sm font-extrabold text-slate-900">0%</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="totalHoursLogged" class="text-3xl font-extrabold text-slate-900">0.0</h2>
+                            <span class="text-sm font-medium text-slate-500">/ 50.0 hrs</span>
+                        </div>
+                        <p id="totalRemainingText" class="text-xs text-slate-500 mt-1">50.0 hours remaining to finish</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                            <div id="totalProgressBar" class="bg-blue-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] font-medium text-slate-400 mt-1.5">
+                            <span>0h</span>
+                            <span>25h</span>
+                            <span>50h Goal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Night Driving Requirement (10h) -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                </svg>
+                                Night Driving
+                            </span>
+                            <span id="nightPercentBadge" class="text-sm font-extrabold text-indigo-700">0%</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="nightHoursLogged" class="text-3xl font-extrabold text-slate-900">0.0</h2>
+                            <span class="text-sm font-medium text-slate-500">/ 10.0 hrs</span>
+                        </div>
+                        <p id="nightRemainingText" class="text-xs text-slate-500 mt-1">10.0 night hours remaining</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                            <div id="nightProgressBar" class="bg-indigo-600 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] font-medium text-slate-400 mt-1.5">
+                            <span>0h</span>
+                            <span>5h</span>
+                            <span>10h Req.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Weekly Pace Tracker (Dynamic Weekly Goal) -->
+                <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">This Week's Pace</span>
+                            <span id="weeklyStatusBadge" class="text-xs font-bold text-slate-600">Target: 1.5h</span>
+                        </div>
+                        <div class="flex items-baseline gap-2">
+                            <h2 id="thisWeekHours" class="text-3xl font-extrabold text-slate-900">0.0</h2>
+                            <span id="weeklyGoalHeaderDenom" class="text-sm font-medium text-slate-500">/ 1.5 hrs</span>
+                        </div>
+                        <p id="thisWeekSubtext" class="text-xs text-slate-500 mt-1">1.5 hrs left to hit this week's goal</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                            <div id="weeklyProgressBar" class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] font-medium text-slate-400 mt-1.5">
+                            <span id="weekRangeLabel">Mon – Sun</span>
+                            <span id="weeklyPercentText">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Main Content Grid: Log Drive Form + Drive History -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- Left Column: Log a New Drive Form (5 cols on lg) -->
+                <section class="lg:col-span-5 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Log a Drive</h3>
+                            <p class="text-xs text-slate-500">Record your supervised practice session</p>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">New Entry</span>
+                    </div>
+
+                    <form id="driveForm" class="space-y-4">
+                        <!-- Custom Presets Bar (Hidden until user adds presets in Settings) -->
+                        <div id="logPresetsSection" class="hidden">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Quick Presets</label>
+                                <span class="text-[11px] text-slate-400">Tap to fill</span>
+                            </div>
+                            <div id="logPresetsContainer" class="flex flex-wrap gap-2">
+                                <!-- Populated dynamically from Settings presets -->
+                            </div>
+                        </div>
+
+                        <!-- Date Picker -->
+                        <div>
+                            <label for="driveDate" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Date</label>
+                            <input type="date" id="driveDate" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+
+                        <!-- Duration Inputs (Hours & Minutes) -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Duration</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="relative">
+                                    <input type="number" id="driveHours" min="0" max="24" value="1" required
+                                        class="w-full pl-3.5 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">hrs</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="driveMinutes" min="0" max="59" step="1" value="0" required
+                                        class="w-full pl-3.5 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">mins</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Driving Condition Toggle (Day vs Night with Smooth Sliding Pill) -->
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Driving Condition</label>
+                            <div class="relative grid grid-cols-2 gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                <div id="typeSliderPill"
+                                    class="day-active absolute top-1 bottom-1 left-1 w-[calc(50%-0.375rem)] bg-white rounded-lg shadow-sm border border-amber-200 transition-all duration-300 ease-out pointer-events-none">
+                                </div>
+
+                                <button type="button" id="btnTypeDay" onclick="setDriveType('day')"
+                                    class="relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-amber-700 transition-colors duration-300">
+                                    <svg class="w-4 h-4 text-amber-500 transition-transform duration-300" id="iconTypeDay" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>Daytime</span>
+                                </button>
+                                <button type="button" id="btnTypeNight" onclick="setDriveType('night')"
+                                    class="relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors duration-300">
+                                    <svg class="w-4 h-4 transition-transform duration-300" id="iconTypeNight" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <span>Nighttime</span>
+                                </button>
+                            </div>
+                            <input type="hidden" id="driveType" value="day">
+                        </div>
+
+                        <!-- Form Validation Error -->
+                        <p id="formErrorMsg" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-2 rounded-lg"></p>
+
+                        <!-- Submit Button -->
+                        <button type="submit"
+                            class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm rounded-xl shadow-sm transition-all flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Save Drive Entry</span>
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Right Column: Drive History & Filters (7 cols on lg) -->
+                <section class="lg:col-span-7 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Drive History</h3>
+                            <p id="historyCountSubtitle" class="text-xs text-slate-500">0 sessions recorded</p>
+                        </div>
+
+                        <!-- Filter Tabs with Smooth Sliding Pill -->
+                        <div class="relative grid grid-cols-3 bg-slate-100 p-1 rounded-xl self-start sm:self-auto border border-slate-200">
+                            <div id="historyFilterSlider"
+                                class="slider-pill-light absolute top-1 bottom-1 left-1 w-[calc(33.333%-0.25rem)] bg-white rounded-lg shadow-sm border border-slate-200/80 transition-transform duration-300 ease-out pointer-events-none">
+                            </div>
+                            <button type="button" onclick="setFilter('all')" id="filterAll"
+                                class="relative z-10 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-900 transition-colors duration-300 text-center">
+                                All
+                            </button>
+                            <button type="button" onclick="setFilter('day')" id="filterDay"
+                                class="relative z-10 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                                Day
+                            </button>
+                            <button type="button" onclick="setFilter('night')" id="filterNight"
+                                class="relative z-10 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                                Night
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Drive Entries Container -->
+                    <div id="driveListContainer" class="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: INSIGHTS                            -->
+        <!-- ========================================== -->
+        <div id="tabViewInsights" class="hidden space-y-6">
+
+            <!-- 1. Schedule & Completion Projection Bubble (Moved from Home) -->
+            <section class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-5 sm:p-6 shadow-sm">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                    <!-- Left: Projection Insights -->
+                    <div class="lg:col-span-7 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span id="paceIndicatorDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Schedule & Completion Projection</h3>
+                        </div>
+                        <p id="projectionHeadline" class="text-lg sm:text-xl font-bold text-white leading-snug">
+                            At 1.5 hrs/week, you'll finish in ~34 weeks.
+                        </p>
+                        <p id="projectionDetail" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            Adjust your weekly drive-time target on the right to see your projected completion date update instantly.
+                        </p>
+                    </div>
+
+                    <!-- Right: Interactive Weekly Target & Est. Finish Date -->
+                    <div class="lg:col-span-5 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 space-y-3">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <label for="weeklyGoalInput" class="block text-xs font-bold uppercase tracking-wider text-slate-300">Weekly Drive Goal</label>
+                                <span class="text-[11px] text-slate-400">Target hrs / week</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="adjustWeeklyGoal(-0.5)" aria-label="Decrease weekly goal"
+                                    class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center transition">
+                                    −
+                                </button>
+                                <div class="relative">
+                                    <input type="number" id="weeklyGoalInput" step="0.25" min="0.25" max="40" value="1.5"
+                                        class="w-20 px-2.5 py-1.5 bg-slate-900/80 border border-white/20 rounded-lg text-center text-sm font-extrabold text-white focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                </div>
+                                <button type="button" onclick="adjustWeeklyGoal(0.5)" aria-label="Increase weekly goal"
+                                    class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center transition">
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2.5 border-t border-white/10 flex items-center justify-between text-xs">
+                            <div>
+                                <span class="block text-slate-400">Your Actual Avg</span>
+                                <span id="avgWeeklyRate" class="font-bold text-white">0.0 hrs/wk</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="block text-slate-400">Est. Finish Date</span>
+                                <span id="estFinishDate" class="text-sm font-extrabold text-emerald-300">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Drive Score (4-Week Consistency) + Interactive Hours Line Graph -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+                <!-- Drive Score Bubble (4 cols on lg) -->
+                <section class="lg:col-span-4 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">Drive Score</span>
+                            <span class="text-[11px] font-semibold text-slate-400">Last 4 Weeks</span>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900">Weekly Goal Consistency</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Measures how reliably you hit your weekly target over the past 4 weeks.</p>
+                    </div>
+
+                    <!-- Circular Score Ring -->
+                    <div class="my-5 flex flex-col items-center justify-center">
+                        <div class="relative w-36 h-36 flex items-center justify-center">
+                            <svg class="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="50" fill="none" stroke="#f1f5f9" stroke-width="11"></circle>
+                                <circle id="driveScoreRing" cx="60" cy="60" r="50" fill="none" stroke="#2563eb" stroke-width="11"
+                                    stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16"
+                                    class="transition-all duration-700 ease-out"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                <span id="driveScoreNumber" class="text-3xl font-extrabold text-slate-900">0</span>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">/ 100</span>
+                            </div>
+                        </div>
+                        <span id="driveScoreRatingBadge" class="mt-2 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
+                            Getting Started
+                        </span>
+                    </div>
+
+                    <!-- 4-Week Breakdown Mini-Bars -->
+                    <div class="space-y-2 pt-3 border-t border-slate-100">
+                        <div class="flex justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                            <span>Past 4 Weeks Breakdown</span>
+                            <span id="driveScoreWeeksMetLabel">0 / 4 met</span>
+                        </div>
+                        <div id="driveScoreMiniWeeks" class="grid grid-cols-4 gap-2">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Line Graph Bubble (8 cols on lg) -->
+                <section class="lg:col-span-8 bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Driving Progress Trend</h3>
+                            <p id="chartSubtitle" class="text-xs text-slate-500">Hours driven per day (last 14 days)</p>
+                        </div>
+
+                        <!-- Graph Mode Switcher: Day / Week / Month / Total with Smooth Sliding Pill -->
+                        <div class="relative grid grid-cols-4 bg-slate-100 p-1 rounded-xl self-start sm:self-auto border border-slate-200">
+                            <div id="chartModeSlider"
+                                class="slider-pill-light absolute top-1 bottom-1 left-1 w-[calc(25%-0.125rem)] bg-white rounded-lg shadow-sm border border-slate-200/80 transition-transform duration-300 ease-out pointer-events-none">
+                            </div>
+                            <button type="button" onclick="setChartMode('day')" id="chartBtnDay"
+                                class="relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-900 transition-colors duration-300 text-center">
+                                Day
+                            </button>
+                            <button type="button" onclick="setChartMode('week')" id="chartBtnWeek"
+                                class="relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                                Week
+                            </button>
+                            <button type="button" onclick="setChartMode('month')" id="chartBtnMonth"
+                                class="relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                                Month
+                            </button>
+                            <button type="button" onclick="setChartMode('total')" id="chartBtnTotal"
+                                class="relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center">
+                                Total
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Responsive SVG Line Chart Container -->
+                    <div class="relative w-full h-64 bg-slate-50/70 rounded-xl border border-slate-100 p-3 flex items-center justify-center">
+                        <svg id="hoursLineChartSvg" class="w-full h-full overflow-visible" viewBox="0 0 640 220" preserveAspectRatio="none">
+                            <!-- Rendered dynamically via JS -->
+                        </svg>
+                    </div>
+
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+                        <span id="chartRangeFootnote">Showing recent activity</span>
+                        <span id="chartPeakStat" class="font-bold text-slate-700">Peak: 0.0 hrs</span>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- 3. Weekly Goal Explorer Bubble (Left/Right Arrows + Day/Night + Goal Status + Logs) -->
+            <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm overflow-hidden">
+                <!-- Header with Left & Right Week Navigation Arrows -->
+                <div class="flex items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                    <button type="button" onclick="changeInspectedWeek(-1)" aria-label="Previous week"
+                        class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 flex items-center justify-center transition shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+
+                    <div id="inspectedWeekHeaderAnim" class="text-center">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-blue-600">Weekly Goal Review</span>
+                        <h3 id="inspectedWeekTitle" class="text-base sm:text-lg font-extrabold text-slate-900">Nov 16 – Nov 22, 2026</h3>
+                        <p id="inspectedWeekRelativeLabel" class="text-xs font-medium text-slate-500">Current Week</p>
+                    </div>
+
+                    <button type="button" id="btnNextWeek" onclick="changeInspectedWeek(1)" aria-label="Next week"
+                        class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 flex items-center justify-center transition shrink-0 disabled:opacity-40 disabled:pointer-events-none">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Two-Column Weekly Summary & Logs (Animated on week switch) -->
+                <div id="inspectedWeekBodyAnim" class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-5 items-start">
+                    <!-- Left Side: Daytime & Nighttime Hours + Goal Met Indicator -->
+                    <div class="lg:col-span-5 bg-slate-50 rounded-xl p-4 sm:p-5 border border-slate-200/80 space-y-4">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Weekly Summary</span>
+                            <span id="inspectedGoalBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800">
+                                In Progress
+                            </span>
+                        </div>
+
+                        <div class="flex items-baseline justify-between">
+                            <div>
+                                <span id="inspectedTotalHours" class="text-3xl font-extrabold text-slate-900">0.0</span>
+                                <span id="inspectedGoalTarget" class="text-sm font-medium text-slate-500">/ 1.5 hrs</span>
+                            </div>
+                            <span id="inspectedWeekPct" class="text-sm font-extrabold text-blue-600">0%</span>
+                        </div>
+
+                        <!-- Daytime vs Nighttime Breakdown Cards -->
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div class="bg-white rounded-xl p-3 border border-amber-200/80">
+                                <div class="flex items-center gap-1.5 text-amber-600 mb-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span class="text-xs font-bold uppercase tracking-wider">Daytime</span>
+                                </div>
+                                <p id="inspectedDayHours" class="text-xl font-extrabold text-slate-900">0.0 hrs</p>
+                            </div>
+
+                            <div class="bg-white rounded-xl p-3 border border-indigo-200/80">
+                                <div class="flex items-center gap-1.5 text-indigo-700 mb-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                                    </svg>
+                                    <span class="text-xs font-bold uppercase tracking-wider">Nighttime</span>
+                                </div>
+                                <p id="inspectedNightHours" class="text-xl font-extrabold text-slate-900">0.0 hrs</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: All Logs for Selected Week -->
+                    <div class="lg:col-span-7 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-slate-900">Logs This Week</h4>
+                            <span id="inspectedWeekLogCount" class="text-xs font-semibold text-slate-500">0 sessions</span>
+                        </div>
+                        <div id="inspectedWeekLogsList" class="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: SETTINGS                            -->
+        <!-- ========================================== -->
+        <div id="tabViewSettings" class="hidden max-w-2xl mx-auto space-y-6">
+
+            <!-- Appearance (Light Mode / Dark Mode) -->
+            <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900">Appearance</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Switch between Light Mode and Dark Mode.</p>
+                    </div>
+
+                    <!-- Sliding Light / Dark Switcher -->
+                    <div class="relative grid grid-cols-2 bg-slate-100 p-1 rounded-xl border border-slate-200 w-full sm:w-56">
+                        <div id="themeSliderPill"
+                            class="slider-pill-light absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] bg-white rounded-lg shadow-sm border border-slate-200/80 transition-transform duration-300 ease-out pointer-events-none">
+                        </div>
+                        <button type="button" id="btnThemeLight" onclick="setTheme('light')"
+                            class="relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-slate-900 transition-colors duration-300">
+                            <svg class="w-4 h-4 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Light</span>
+                        </button>
+                        <button type="button" id="btnThemeDark" onclick="setTheme('dark')"
+                            class="relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors duration-300">
+                            <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                            </svg>
+                            <span>Dark</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Weekly Drive Goal Settings Card -->
+            <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Weekly Driving Goal</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Set how many hours per week you aim to drive. This updates your Home pace bar, Insights projections, and Drive Score.</p>
+                </div>
+
+                <div class="flex items-center justify-between gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="block text-sm font-bold text-slate-900">Target Hours per Week</span>
+                        <span class="text-xs text-slate-500">Resets every Monday</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="adjustWeeklyGoal(-0.5)" aria-label="Decrease weekly goal"
+                            class="w-9 h-9 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-bold flex items-center justify-center transition">
+                            −
+                        </button>
+                        <input type="number" id="settingsWeeklyGoalInput" step="0.25" min="0.25" max="40" value="1.5"
+                            class="w-20 px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-center text-sm font-extrabold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <button type="button" onclick="adjustWeeklyGoal(0.5)" aria-label="Increase weekly goal"
+                            class="w-9 h-9 rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 font-bold flex items-center justify-center transition">
+                            +
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Custom Drive Presets Manager -->
+            <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Custom Log Presets</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Create quick one-tap buttons for your regular drives (like "School Commute" or "Highway Practice"). They will appear in the Log a Drive section on Home.</p>
+                </div>
+
+                <!-- Add Preset Form -->
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                        <div class="sm:col-span-6">
+                            <label for="presetNameInput" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Preset Name</label>
+                            <input type="text" id="presetNameInput" maxlength="28" placeholder="e.g., School Commute"
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label for="presetHoursInput" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Hours</label>
+                            <input type="number" id="presetHoursInput" min="0" max="24" value="0"
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="sm:col-span-3">
+                            <label for="presetMinutesInput" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Minutes</label>
+                            <input type="number" id="presetMinutesInput" min="0" max="59" value="30"
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                        <!-- Smooth Day / Night Preset Condition Toggle -->
+                        <div class="relative grid grid-cols-2 bg-slate-100 p-1 rounded-lg border border-slate-200 w-full sm:w-48">
+                            <div id="presetTypeSlider"
+                                class="slider-pill-light absolute top-1 bottom-1 left-1 w-[calc(50%-0.25rem)] bg-white rounded-md shadow-sm border border-amber-200 transition-transform duration-300 ease-out pointer-events-none">
+                            </div>
+                            <button type="button" id="btnPresetTypeDay" onclick="setPresetFormType('day')"
+                                class="relative z-10 py-1.5 px-2.5 text-xs font-bold text-amber-700 transition-colors duration-300 text-center">
+                                Day
+                            </button>
+                            <button type="button" id="btnPresetTypeNight" onclick="setPresetFormType('night')"
+                                class="relative z-10 py-1.5 px-2.5 text-xs font-bold text-slate-500 transition-colors duration-300 text-center">
+                                Night
+                            </button>
+                        </div>
+                        <input type="hidden" id="presetTypeValue" value="day">
+
+                        <button type="button" onclick="addCustomPreset()"
+                            class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Add Preset</span>
+                        </button>
+                    </div>
+                    <p id="presetErrorMsg" class="hidden text-xs font-semibold text-rose-600"></p>
+                </div>
+
+                <!-- Saved Presets List -->
+                <div id="settingsPresetsList" class="space-y-2">
+                    <!-- Populated via JS -->
+                </div>
+            </section>
+
+            <!-- AI Paper Log Scanner (Settings Tab) -->
+            <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-lg font-bold text-slate-900">AI Driving Log Scanner</h3>
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">Gemini Vision</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">Take a photo of a handwritten or printed driving log to automatically extract and add your sessions.</p>
+                    </div>
+                </div>
+
+                <!-- Hidden Camera / Photo File Input -->
+                <input type="file" id="aiLogPhotoInput" accept="image/*" capture="environment" class="hidden" onchange="handleAiPhotoSelected(event)">
+
+                <!-- Take Picture / Upload Log Button -->
+                <button type="button" id="btnScanLogPhoto" onclick="triggerAiPhotoCapture()"
+                    class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                        <circle cx="12" cy="13" r="3"></circle>
+                    </svg>
+                    <span>Take Picture / Upload Driving Log</span>
+                </button>
+
+                <!-- Scanning Loading Indicator -->
+                <div id="aiScanLoadingBox" class="hidden p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-center gap-3">
+                    <svg class="w-5 h-5 text-blue-600 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <div>
+                        <p class="text-xs font-bold text-blue-900">Reading your driving log with AI...</p>
+                        <p class="text-[11px] text-blue-700">Extracting dates, durations, and day/night conditions.</p>
+                    </div>
+                </div>
+
+                <!-- Scan Error Message -->
+                <p id="aiScanErrorMsg" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-2.5 rounded-xl border border-rose-200"></p>
+
+                <!-- Detected Sessions Review Panel -->
+                <div id="aiScanResultsPanel" class="hidden space-y-3 pt-2 border-t border-slate-100">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900">Review Detected Sessions</h4>
+                            <p id="aiScanResultsSubtitle" class="text-[11px] text-slate-500">Verify or edit any row before importing</p>
+                        </div>
+                        <button type="button" onclick="discardScannedSessions()" class="text-xs font-bold text-slate-400 hover:text-rose-600 transition">
+                            Discard
+                        </button>
+                    </div>
+
+                    <div id="aiScannedListContainer" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <button type="button" onclick="importScannedSessions()"
+                        class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span id="btnImportScannedLabel">Add All Sessions to Log</span>
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // ==========================================
+        // Constants & State Management
+        // ==========================================
+        const STORAGE_KEY = 'drivelog_entries_v1';
+        const WEEKLY_GOAL_STORAGE_KEY = 'drivelog_weekly_goal_v1';
+        const THEME_STORAGE_KEY = 'drivelog_theme_v1';
+        const PRESETS_STORAGE_KEY = 'drivelog_presets_v1';
+        const GOAL_TOTAL_HOURS = 50.0;
+        const GOAL_NIGHT_HOURS = 10.0;
+        const DEFAULT_WEEKLY_HOURS = 1.5;
+
+        let drives = [];
+        let customPresets = [];
+        let scannedAiSessions = [];
+        let currentTheme = 'light';
+        let currentFilter = 'all';
+        let targetWeeklyHours = DEFAULT_WEEKLY_HOURS;
+        let activeTab = 'home';
+        let chartMode = 'day'; // 'day' | 'week' | 'month' | 'total'
+        let inspectedWeekOffset = 0; // 0 = current week, -1 = last week, etc.
+
+        // ==========================================
+        // Initialization
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            setDefaultDate();
+            loadTheme();
+            loadWeeklyGoal();
+            loadPresets();
+            loadDrives();
+            renderAll();
+
+            // Event Listener for Form Submission
+            document.getElementById('driveForm').addEventListener('submit', handleFormSubmit);
+
+            // Event Listeners for Weekly Goal Inputs (Insights & Settings)
+            ['weeklyGoalInput', 'settingsWeeklyGoalInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', handleWeeklyGoalChange);
+                    el.addEventListener('blur', finalizeWeeklyGoalInput);
+                }
+            });
+        });
+
+        // ==========================================
+        // Theme (Light Mode / Dark Mode)
+        // ==========================================
+        function loadTheme() {
+            try {
+                const saved = localStorage.getItem(THEME_STORAGE_KEY);
+                currentTheme = saved === 'dark' ? 'dark' : 'light';
+            } catch (e) {
+                currentTheme = 'light';
+            }
+            applyTheme(currentTheme);
+        }
+
+        function applyTheme(theme) {
+            currentTheme = theme;
+            const body = document.body;
+            const slider = document.getElementById('themeSliderPill');
+            const btnLight = document.getElementById('btnThemeLight');
+            const btnDark = document.getElementById('btnThemeDark');
+
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                if (slider) slider.style.transform = 'translateX(100%)';
+                if (btnDark) btnDark.className = 'relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-white transition-colors duration-300';
+                if (btnLight) btnLight.className = 'relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors duration-300';
+            } else {
+                body.classList.remove('dark-mode');
+                if (slider) slider.style.transform = 'translateX(0)';
+                if (btnLight) btnLight.className = 'relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-slate-900 transition-colors duration-300';
+                if (btnDark) btnDark.className = 'relative z-10 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors duration-300';
+            }
+        }
+
+        window.setTheme = function(theme) {
+            applyTheme(theme);
+            try {
+                localStorage.setItem(THEME_STORAGE_KEY, theme);
+            } catch (e) {
+                console.error('Failed to save theme:', e);
+            }
+        };
+
+        // ==========================================
+        // Custom Drive Presets (Settings + Log Area)
+        // ==========================================
+        function loadPresets() {
+            try {
+                const raw = localStorage.getItem(PRESETS_STORAGE_KEY);
+                customPresets = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(customPresets)) customPresets = [];
+            } catch (e) {
+                customPresets = [];
+            }
+            renderPresetsUI();
+        }
+
+        function savePresets() {
+            try {
+                localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(customPresets));
+            } catch (e) {
+                console.error('Failed to save presets:', e);
+            }
+        }
+
+        // ==========================================
+        // AI Driving Log Scanner (Netlify Function Backend)
+        // ==========================================
+        window.triggerAiPhotoCapture = function() {
+            const errorEl = document.getElementById('aiScanErrorMsg');
+            errorEl.classList.add('hidden');
+            const fileInput = document.getElementById('aiLogPhotoInput');
+            fileInput.value = '';
+            fileInput.click();
+        };
+
+        function compressImageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error('Could not read selected image file.'));
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error('Invalid image format.'));
+                    img.onload = () => {
+                        const maxDim = 1600;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        resolve({
+                            base64: dataUrl.split(',')[1],
+                            mimeType: 'image/jpeg'
+                        });
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        window.handleAiPhotoSelected = async function(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            const loadingBox = document.getElementById('aiScanLoadingBox');
+            const errorEl = document.getElementById('aiScanErrorMsg');
+            const resultsPanel = document.getElementById('aiScanResultsPanel');
+
+            errorEl.classList.add('hidden');
+            resultsPanel.classList.add('hidden');
+            loadingBox.classList.remove('hidden');
+
+            try {
+                const { base64, mimeType } = await compressImageToBase64(file);
+                const currentYear = new Date().getFullYear();
+
+                const response = await fetch('/.netlify/functions/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ base64, mimeType, currentYear })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result?.error || `Server Error (${response.status})`);
+                }
+
+                const parsed = result?.sessions;
+                const fallbackDate = formatDateKey(new Date());
+
+                scannedAiSessions = (Array.isArray(parsed) ? parsed : [])
+                    .map((item, idx) => {
+                        const hrs = Math.max(0, parseInt(item.hours, 10) || 0);
+                        const mins = Math.max(0, Math.min(59, parseInt(item.minutes, 10) || 0));
+                        const validDate = /^\d{4}-\d{2}-\d{2}$/.test(item.date) ? item.date : fallbackDate;
+                        return {
+                            tempId: `scan_${Date.now()}_${idx}`,
+                            date: validDate,
+                            hours: hrs,
+                            minutes: mins,
+                            type: item.type === 'night' ? 'night' : 'day'
+                        };
+                    })
+                    .filter(s => (s.hours * 60 + s.minutes) > 0);
+
+                if (scannedAiSessions.length === 0) {
+                    throw new Error('No driving entries were found in that photo. Try taking a clearer, well-lit picture.');
+                }
+
+                renderScannedSessions();
+                resultsPanel.classList.remove('hidden');
+                showToast(`Found ${scannedAiSessions.length} driving session${scannedAiSessions.length === 1 ? '' : 's'}!`);
+            } catch (err) {
+                errorEl.textContent = `Scan failed: ${err.message}`;
+                errorEl.classList.remove('hidden');
+            } finally {
+                loadingBox.classList.add('hidden');
+            }
+        };
+
+        function renderScannedSessions() {
+            const container = document.getElementById('aiScannedListContainer');
+            const btnLabel = document.getElementById('btnImportScannedLabel');
+            if (!container) return;
+
+            btnLabel.textContent = `Add ${scannedAiSessions.length} Session${scannedAiSessions.length === 1 ? '' : 's'} to Log`;
+
+            container.innerHTML = scannedAiSessions.map((s, idx) => `
+                <div class="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="date" value="${s.date}" onchange="updateScannedField(${idx}, 'date', this.value)"
+                            class="px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900">
+                        <div class="flex items-center gap-1">
+                            <input type="number" min="0" max="24" value="${s.hours}" onchange="updateScannedField(${idx}, 'hours', this.value)"
+                                class="w-12 px-1.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-center text-slate-900">
+                            <span class="text-[11px] text-slate-500">h</span>
+                            <input type="number" min="0" max="59" value="${s.minutes}" onchange="updateScannedField(${idx}, 'minutes', this.value)"
+                                class="w-12 px-1.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-center text-slate-900">
+                            <span class="text-[11px] text-slate-500">m</span>
+                        </div>
+                        <button type="button" onclick="toggleScannedType(${idx})"
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
+                                s.type === 'night'
+                                    ? 'bg-indigo-950 text-indigo-200 border-indigo-800'
+                                    : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }">
+                            ${s.type === 'night' ? 'Night' : 'Day'}
+                        </button>
+                    </div>
+                    <button type="button" onclick="removeScannedItem(${idx})" title="Remove row"
+                        class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.updateScannedField = function(idx, field, val) {
+            if (!scannedAiSessions[idx]) return;
+            if (field === 'date' && /^\d{4}-\d{2}-\d{2}$/.test(val)) {
+                scannedAiSessions[idx].date = val;
+            } else if (field === 'hours') {
+                scannedAiSessions[idx].hours = Math.max(0, parseInt(val, 10) || 0);
+            } else if (field === 'minutes') {
+                scannedAiSessions[idx].minutes = Math.max(0, Math.min(59, parseInt(val, 10) || 0));
+            }
+        };
+
+        window.toggleScannedType = function(idx) {
+            if (!scannedAiSessions[idx]) return;
+            scannedAiSessions[idx].type = scannedAiSessions[idx].type === 'day' ? 'night' : 'day';
+            renderScannedSessions();
+        };
+
+        window.removeScannedItem = function(idx) {
+            scannedAiSessions.splice(idx, 1);
+            if (scannedAiSessions.length === 0) {
+                discardScannedSessions();
+            } else {
+                renderScannedSessions();
+            }
+        };
+
+        window.discardScannedSessions = function() {
+            scannedAiSessions = [];
+            document.getElementById('aiScanResultsPanel').classList.add('hidden');
+        };
+
+        window.importScannedSessions = function() {
+            let addedCount = 0;
+            scannedAiSessions.forEach((s, i) => {
+                const totalMinutes = (s.hours * 60) + s.minutes;
+                if (totalMinutes <= 0) return;
+                drives.unshift({
+                    id: Date.now().toString(36) + i + Math.random().toString(36).substring(2, 5),
+                    date: s.date,
+                    totalMinutes,
+                    type: s.type,
+                    createdAt: new Date().toISOString()
+                });
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                drives.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+                saveDrives();
+                renderAll();
+                showToast(`Imported ${addedCount} driving session${addedCount === 1 ? '' : 's'}!`);
+            }
+            discardScannedSessions();
+        };
+
+        window.addCustomPreset = function() {
+            const nameInput = document.getElementById('presetNameInput');
+            const hrsInput = document.getElementById('presetHoursInput');
+            const minsInput = document.getElementById('presetMinutesInput');
+            const typeVal = document.getElementById('presetTypeValue').value;
+            const errorEl = document.getElementById('presetErrorMsg');
+
+            const name = nameInput.value.trim();
+            const hrs = parseInt(hrsInput.value, 10) || 0;
+            const mins = parseInt(minsInput.value, 10) || 0;
+            const totalMinutes = (hrs * 60) + mins;
+
+            if (!name) {
+                errorEl.textContent = 'Please enter a name for your preset.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            if (totalMinutes <= 0) {
+                errorEl.textContent = 'Preset duration must be greater than 0 minutes.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            customPresets.push({
+                id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+                name,
+                totalMinutes,
+                type: typeVal
+            });
+
+            savePresets();
+            renderPresetsUI();
+
+            nameInput.value = '';
+            hrsInput.value = 0;
+            minsInput.value = 30;
+            showToast(`Added preset "${name}"!`);
+        };
+
+        window.deleteCustomPreset = function(id) {
+            customPresets = customPresets.filter(p => p.id !== id);
+            savePresets();
+            renderPresetsUI();
+            showToast('Preset removed.');
+        };
+
+        window.applyCustomPreset = function(id) {
+            const preset = customPresets.find(p => p.id === id);
+            if (!preset) return;
+
+            const hrs = Math.floor(preset.totalMinutes / 60);
+            const mins = preset.totalMinutes % 60;
+            document.getElementById('driveHours').value = hrs;
+            document.getElementById('driveMinutes').value = mins;
+            window.setDriveType(preset.type);
+            showToast(`Applied "${preset.name}" (${formatDuration(preset.totalMinutes)})`);
+        };
+
+        function renderPresetsUI() {
+            // 1. Settings list
+            const settingsList = document.getElementById('settingsPresetsList');
+            if (settingsList) {
+                if (customPresets.length === 0) {
+                    settingsList.innerHTML = `
+                        <p class="text-xs text-slate-400 italic py-2 text-center">No presets added yet. Add one above to see it on your Log a Drive card.</p>
+                    `;
+                } else {
+                    settingsList.innerHTML = customPresets.map(p => {
+                        const isNight = p.type === 'night';
+                        return `
+                            <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${isNight ? 'bg-indigo-950 text-indigo-200 border-indigo-800' : 'bg-amber-50 text-amber-800 border-amber-200'}">
+                                        ${isNight ? 'Night' : 'Day'}
+                                    </span>
+                                    <span class="text-xs font-bold text-slate-900 truncate">${p.name}</span>
+                                    <span class="text-xs font-semibold text-slate-500">(${formatDuration(p.totalMinutes)})</span>
+                                </div>
+                                <button type="button" onclick="deleteCustomPreset('${p.id}')" title="Remove preset"
+                                    class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // 2. Log a Drive quick-tap pills (Hidden if no presets exist)
+            const logSection = document.getElementById('logPresetsSection');
+            const logContainer = document.getElementById('logPresetsContainer');
+            if (logSection && logContainer) {
+                if (customPresets.length === 0) {
+                    logSection.classList.add('hidden');
+                    logContainer.innerHTML = '';
+                } else {
+                    logSection.classList.remove('hidden');
+                    logContainer.innerHTML = customPresets.map(p => {
+                        const isNight = p.type === 'night';
+                        return `
+                            <button type="button" onclick="applyCustomPreset('${p.id}')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition active:scale-95 ${
+                                    isNight
+                                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100'
+                                        : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
+                                }">
+                                <span>${p.name}</span>
+                                <span class="opacity-75">· ${formatDuration(p.totalMinutes)}</span>
+                            </button>
+                        `;
+                    }).join('');
+                }
+            }
+        }
+
+        // ==========================================
+        // Top Navigation Tab Switcher (Sliding Pill)
+        // ==========================================
+        window.switchTab = function(tab) {
+            activeTab = tab;
+            const tabOrder = ['home', 'insights', 'settings'];
+            const idx = tabOrder.indexOf(tab);
+            const slider = document.getElementById('navTabSlider');
+            if (slider && idx >= 0) {
+                slider.style.transform = `translateX(${idx * 100}%)`;
+            }
+
+            const views = {
+                home: document.getElementById('tabViewHome'),
+                insights: document.getElementById('tabViewInsights'),
+                settings: document.getElementById('tabViewSettings')
+            };
+            const buttons = {
+                home: document.getElementById('navTabHome'),
+                insights: document.getElementById('navTabInsights'),
+                settings: document.getElementById('navTabSettings')
+            };
+
+            Object.keys(views).forEach(key => {
+                if (key === tab) {
+                    views[key].classList.remove('hidden');
+                    buttons[key].className = 'relative z-10 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-900 transition-colors duration-300 text-center';
+                } else {
+                    views[key].classList.add('hidden');
+                    buttons[key].className = 'relative z-10 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center';
+                }
+            });
+
+            if (tab === 'insights') {
+                renderInsightsTab();
+            }
+        };
+
+        function setDefaultDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('driveDate').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        function loadDrives() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                drives = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(drives)) drives = [];
+            } catch (err) {
+                console.error('Failed to load drives from storage:', err);
+                drives = [];
+            }
+        }
+
+        function saveDrives() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(drives));
+                window.localStorage.getItem(STORAGE_KEY);
+            } catch (err) {
+                console.error('Failed to save drives:', err);
+            }
+        }
+
+        function loadWeeklyGoal() {
+            try {
+                const saved = parseFloat(localStorage.getItem(WEEKLY_GOAL_STORAGE_KEY));
+                if (!isNaN(saved) && saved >= 0.25 && saved <= 40) {
+                    targetWeeklyHours = saved;
+                } else {
+                    targetWeeklyHours = DEFAULT_WEEKLY_HOURS;
+                }
+            } catch (err) {
+                targetWeeklyHours = DEFAULT_WEEKLY_HOURS;
+            }
+            syncWeeklyGoalControls();
+        }
+
+        function saveWeeklyGoal() {
+            try {
+                localStorage.setItem(WEEKLY_GOAL_STORAGE_KEY, String(targetWeeklyHours));
+                window.localStorage.getItem(WEEKLY_GOAL_STORAGE_KEY);
+            } catch (err) {
+                console.error('Failed to save weekly goal:', err);
+            }
+        }
+
+        function syncWeeklyGoalControls() {
+            ['weeklyGoalInput', 'settingsWeeklyGoalInput'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) input.value = targetWeeklyHours;
+            });
+        }
+
+        function handleWeeklyGoalChange(e) {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val) && val >= 0.25 && val <= 40) {
+                targetWeeklyHours = val;
+                saveWeeklyGoal();
+                syncWeeklyGoalControls();
+                renderAll();
+            }
+        }
+
+        function finalizeWeeklyGoalInput(e) {
+            let val = parseFloat(e.target.value);
+            if (isNaN(val) || val < 0.25) val = 0.25;
+            if (val > 40) val = 40;
+            targetWeeklyHours = Math.round(val * 100) / 100;
+            saveWeeklyGoal();
+            syncWeeklyGoalControls();
+            renderAll();
+        }
+
+        window.setWeeklyGoal = function(hours) {
+            targetWeeklyHours = hours;
+            saveWeeklyGoal();
+            syncWeeklyGoalControls();
+            renderAll();
+        };
+
+        window.adjustWeeklyGoal = function(delta) {
+            const next = Math.min(40, Math.max(0.25, Math.round((targetWeeklyHours + delta) * 100) / 100));
+            window.setWeeklyGoal(next);
+        };
+
+        // ==========================================
+        // Settings Actions
+        // ==========================================
+        window.exportLogsJson = function() {
+            const payload = {
+                exportedAt: new Date().toISOString(),
+                weeklyGoalHours: targetWeeklyHours,
+                entries: drives
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `drivelog-backup-${formatDateKey(new Date())}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Backup file downloaded!');
+        };
+
+        window.promptClearAllData = function() {
+            document.getElementById('clearConfirmBox').classList.remove('hidden');
+        };
+
+        window.cancelClearAllData = function() {
+            document.getElementById('clearConfirmBox').classList.add('hidden');
+        };
+
+        window.confirmClearAllData = function() {
+            drives = [];
+            saveDrives();
+            renderAll();
+            document.getElementById('clearConfirmBox').classList.add('hidden');
+            showToast('All driving logs cleared.');
+        };
+
+        // ==========================================
+        // Form & Input Helpers
+        // ==========================================
+        window.setDriveType = function(type) {
+            document.getElementById('driveType').value = type;
+            const slider = document.getElementById('typeSliderPill');
+            const btnDay = document.getElementById('btnTypeDay');
+            const btnNight = document.getElementById('btnTypeNight');
+            const iconDay = document.getElementById('iconTypeDay');
+            const iconNight = document.getElementById('iconTypeNight');
+
+            if (type === 'day') {
+                slider.style.transform = 'translateX(0)';
+                slider.className = 'day-active absolute top-1 bottom-1 left-1 w-[calc(50%-0.375rem)] bg-white rounded-lg shadow-sm border border-amber-200 transition-all duration-300 ease-out pointer-events-none';
+                btnDay.className = 'relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-amber-700 transition-colors duration-300';
+                btnNight.className = 'relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors duration-300';
+                iconDay.classList.add('scale-110');
+                iconNight.classList.remove('scale-110');
+            } else {
+                slider.style.transform = 'translateX(calc(100% + 0.25rem))';
+                slider.className = 'night-active absolute top-1 bottom-1 left-1 w-[calc(50%-0.375rem)] bg-indigo-950 rounded-lg shadow-sm border border-indigo-800 transition-all duration-300 ease-out pointer-events-none';
+                btnNight.className = 'relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-white transition-colors duration-300';
+                btnDay.className = 'relative z-10 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors duration-300';
+                iconNight.classList.add('scale-110');
+                iconDay.classList.remove('scale-110');
+            }
+        };
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const dateVal = document.getElementById('driveDate').value;
+            const hrs = parseInt(document.getElementById('driveHours').value, 10) || 0;
+            const mins = parseInt(document.getElementById('driveMinutes').value, 10) || 0;
+            const type = document.getElementById('driveType').value;
+            const errorEl = document.getElementById('formErrorMsg');
+
+            const totalMinutes = (hrs * 60) + mins;
+
+            if (!dateVal) {
+                errorEl.textContent = 'Please select a valid date for your drive.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (totalMinutes <= 0) {
+                errorEl.textContent = 'Please enter a drive duration greater than 0 minutes.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+
+            const newEntry = {
+                id: Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+                date: dateVal,
+                totalMinutes: totalMinutes,
+                type: type,
+                createdAt: new Date().toISOString()
+            };
+
+            drives.unshift(newEntry);
+            // Sort newest date first
+            drives.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+
+            saveDrives();
+            renderAll();
+
+            // Reset duration fields to defaults
+            document.getElementById('driveHours').value = 1;
+            document.getElementById('driveMinutes').value = 0;
+
+            showToast(`Logged ${formatDuration(totalMinutes)} of ${type} driving!`);
+        }
+
+        window.deleteDrive = function(id) {
+            drives = drives.filter(d => d.id !== id);
+            saveDrives();
+            renderAll();
+            showToast('Drive entry removed.');
+        };
+
+        window.setFilter = function(filter) {
+            currentFilter = filter;
+            const filterOrder = ['all', 'day', 'night'];
+            const idx = filterOrder.indexOf(filter);
+            const slider = document.getElementById('historyFilterSlider');
+            if (slider && idx >= 0) {
+                slider.style.transform = `translateX(${idx * 100}%)`;
+            }
+
+            filterOrder.forEach(f => {
+                const btn = document.getElementById(`filter${f.charAt(0).toUpperCase() + f.slice(1)}`);
+                if (f === filter) {
+                    btn.className = 'relative z-10 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-900 transition-colors duration-300 text-center';
+                } else {
+                    btn.className = 'relative z-10 px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center';
+                }
+            });
+            renderHistoryList();
+        };
+
+        // ==========================================
+        // Date & Week Calculation Helpers (Monday - Sunday)
+        // ==========================================
+        function parseLocalDate(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        function getMondayOfWeek(dateObj) {
+            const day = dateObj.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+            const diffToMonday = day === 0 ? -6 : 1 - day;
+            return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + diffToMonday);
+        }
+
+        function formatDateKey(dateObj) {
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function formatDisplayDate(dateStr) {
+            const dateObj = parseLocalDate(dateStr);
+            return dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatDuration(totalMinutes) {
+            const h = Math.floor(totalMinutes / 60);
+            const m = totalMinutes % 60;
+            if (h > 0 && m > 0) return `${h}h ${m}m`;
+            if (h > 0) return `${h}h`;
+            return `${m}m`;
+        }
+
+        // ==========================================
+        // Rendering & UI Updates
+        // ==========================================
+        function renderAll() {
+            // 1. Total Hours calculations
+            const totalMinutesAll = drives.reduce((sum, d) => sum + d.totalMinutes, 0);
+            const totalHours = totalMinutesAll / 60;
+            const totalPct = Math.min(100, Math.round((totalHours / GOAL_TOTAL_HOURS) * 100));
+            const totalRemaining = Math.max(0, GOAL_TOTAL_HOURS - totalHours);
+
+            document.getElementById('totalHoursLogged').textContent = totalHours.toFixed(1);
+            document.getElementById('totalPercentBadge').textContent = `${totalPct}%`;
+            document.getElementById('totalProgressBar').style.width = `${totalPct}%`;
+            document.getElementById('totalRemainingText').textContent = totalRemaining > 0 
+                ? `${totalRemaining.toFixed(1)} hours remaining to finish` 
+                : '🎉 Total goal reached!';
+
+            // 2. Night Hours calculations
+            const nightMinutesAll = drives.filter(d => d.type === 'night').reduce((sum, d) => sum + d.totalMinutes, 0);
+            const nightHours = nightMinutesAll / 60;
+            const nightPct = Math.min(100, Math.round((nightHours / GOAL_NIGHT_HOURS) * 100));
+            const nightRemaining = Math.max(0, GOAL_NIGHT_HOURS - nightHours);
+
+            document.getElementById('nightHoursLogged').textContent = nightHours.toFixed(1);
+            document.getElementById('nightPercentBadge').textContent = `${nightPct}%`;
+            document.getElementById('nightProgressBar').style.width = `${nightPct}%`;
+            document.getElementById('nightRemainingText').textContent = nightRemaining > 0
+                ? `${nightRemaining.toFixed(1)} night hours remaining`
+                : '✨ Night requirement met!';
+
+            // 3. Weekly Pace calculations (Monday - Sunday)
+            const now = new Date();
+            const currentMonday = getMondayOfWeek(now);
+            const nextMonday = new Date(currentMonday.getFullYear(), currentMonday.getMonth(), currentMonday.getDate() + 7);
+
+            const thisWeekMinutes = drives.reduce((sum, d) => {
+                const dDate = parseLocalDate(d.date);
+                if (dDate >= currentMonday && dDate < nextMonday) {
+                    return sum + d.totalMinutes;
+                }
+                return sum;
+            }, 0);
+
+            const thisWeekHours = thisWeekMinutes / 60;
+            const weeklyPct = Math.min(100, Math.round((thisWeekHours / targetWeeklyHours) * 100));
+            const weeklyRemaining = Math.max(0, targetWeeklyHours - thisWeekHours);
+
+            document.getElementById('thisWeekHours').textContent = thisWeekHours.toFixed(1);
+            document.getElementById('weeklyGoalHeaderDenom').textContent = `/ ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')} hrs`;
+            document.getElementById('weeklyStatusBadge').textContent = `Target: ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')}h`;
+            document.getElementById('weeklyPercentText').textContent = `${weeklyPct}%`;
+            document.getElementById('weeklyProgressBar').style.width = `${weeklyPct}%`;
+
+            const monStr = currentMonday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const sunDate = new Date(nextMonday.getTime() - 86400000);
+            const sunStr = sunDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('weekRangeLabel').textContent = `${monStr} – ${sunStr}`;
+
+            if (weeklyRemaining === 0) {
+                document.getElementById('thisWeekSubtext').textContent = `🌟 Weekly goal achieved! (${thisWeekHours.toFixed(1)}h this week)`;
+            } else {
+                document.getElementById('thisWeekSubtext').textContent = `${weeklyRemaining.toFixed(1)} hrs left to hit this week's goal`;
+            }
+
+            // 4. Projection & Est Finish Date Calculations
+            renderProjection(totalHours);
+
+            // 5. Render History List
+            renderHistoryList();
+
+            // 6. Render Insights Visuals (Chart, Drive Score, Weekly Explorer)
+            renderInsightsTab();
+        }
+
+        function renderInsightsTab() {
+            renderDriveScore();
+            renderHoursLineChart();
+            renderInspectedWeekCard();
+        }
+
+        // ==========================================
+        // Drive Score (Past 4 Weeks Consistency out of 100)
+        // ==========================================
+        function renderDriveScore() {
+            const now = new Date();
+            const currentMonday = getMondayOfWeek(now);
+            const weekBreakdown = [];
+            let totalScoreSum = 0;
+            let weeksMetCount = 0;
+
+            // Evaluate the 4 most recent weeks (3 weeks ago -> current week)
+            for (let offset = -3; offset <= 0; offset++) {
+                const weekStart = new Date(currentMonday.getFullYear(), currentMonday.getMonth(), currentMonday.getDate() + (offset * 7));
+                const weekEnd = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + 7);
+
+                const minsInWeek = drives.reduce((sum, d) => {
+                    const dDate = parseLocalDate(d.date);
+                    return (dDate >= weekStart && dDate < weekEnd) ? sum + d.totalMinutes : sum;
+                }, 0);
+
+                const hrsInWeek = minsInWeek / 60;
+                const ratio = targetWeeklyHours > 0 ? Math.min(1, hrsInWeek / targetWeeklyHours) : 1;
+                const weekPoints = ratio * 25; // Each of the 4 weeks is worth up to 25 points
+                totalScoreSum += weekPoints;
+
+                const met = hrsInWeek >= targetWeeklyHours;
+                if (met) weeksMetCount++;
+
+                const label = offset === 0
+                    ? 'This Wk'
+                    : weekStart.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' });
+
+                weekBreakdown.push({
+                    label,
+                    hrs: hrsInWeek,
+                    pct: Math.round(ratio * 100),
+                    met
+                });
+            }
+
+            const finalScore = Math.round(totalScoreSum);
+            const circumference = 314.16; // 2 * PI * 50
+            const dashOffset = circumference - (finalScore / 100) * circumference;
+
+            const ringEl = document.getElementById('driveScoreRing');
+            const numEl = document.getElementById('driveScoreNumber');
+            const badgeEl = document.getElementById('driveScoreRatingBadge');
+            const weeksMetEl = document.getElementById('driveScoreWeeksMetLabel');
+            const miniContainer = document.getElementById('driveScoreMiniWeeks');
+
+            if (!ringEl) return;
+
+            ringEl.style.strokeDashoffset = dashOffset;
+            numEl.textContent = finalScore;
+            weeksMetEl.textContent = `${weeksMetCount} / 4 met`;
+
+            if (finalScore >= 90) {
+                ringEl.setAttribute('stroke', '#10b981');
+                badgeEl.className = 'mt-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700';
+                badgeEl.textContent = 'Excellent Consistency';
+            } else if (finalScore >= 70) {
+                ringEl.setAttribute('stroke', '#2563eb');
+                badgeEl.className = 'mt-2 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700';
+                badgeEl.textContent = 'Solid Pace';
+            } else if (finalScore >= 40) {
+                ringEl.setAttribute('stroke', '#f59e0b');
+                badgeEl.className = 'mt-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700';
+                badgeEl.textContent = 'Building Momentum';
+            } else {
+                ringEl.setAttribute('stroke', '#64748b');
+                badgeEl.className = 'mt-2 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700';
+                badgeEl.textContent = drives.length === 0 ? 'No Recent Drives' : 'Needs More Weekly Time';
+            }
+
+            miniContainer.innerHTML = weekBreakdown.map(w => `
+                <div class="bg-slate-50 rounded-lg p-2 border ${w.met ? 'border-emerald-200 bg-emerald-50/40' : 'border-slate-200'} text-center">
+                    <div class="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden mb-1.5">
+                        <div class="h-full rounded-full ${w.met ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${w.pct}%"></div>
+                    </div>
+                    <span class="block text-[11px] font-extrabold text-slate-800">${w.hrs.toFixed(1)}h</span>
+                    <span class="block text-[10px] font-medium text-slate-500">${w.label}</span>
+                </div>
+            `).join('');
+        }
+
+        // ==========================================
+        // Interactive Line Graph (Day / Week / Month / Total)
+        // ==========================================
+        window.setChartMode = function(mode) {
+            chartMode = mode;
+            const modeOrder = ['day', 'week', 'month', 'total'];
+            const idx = modeOrder.indexOf(mode);
+            const slider = document.getElementById('chartModeSlider');
+            if (slider && idx >= 0) {
+                slider.style.transform = `translateX(${idx * 100}%)`;
+            }
+
+            modeOrder.forEach(m => {
+                const btn = document.getElementById(`chartBtn${m.charAt(0).toUpperCase() + m.slice(1)}`);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = 'relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-900 transition-colors duration-300 text-center';
+                } else {
+                    btn.className = 'relative z-10 px-2.5 sm:px-3 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-colors duration-300 text-center';
+                }
+            });
+            renderHoursLineChart();
+        };
+
+        function renderHoursLineChart() {
+            const svg = document.getElementById('hoursLineChartSvg');
+            const subtitleEl = document.getElementById('chartSubtitle');
+            const footnoteEl = document.getElementById('chartRangeFootnote');
+            const peakEl = document.getElementById('chartPeakStat');
+            if (!svg) return;
+
+            const now = new Date();
+            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            let points = []; // { label, value }
+
+            if (chartMode === 'day') {
+                subtitleEl.textContent = 'Hours driven per day (last 14 days)';
+                footnoteEl.textContent = 'Daily driving totals over the past 2 weeks';
+                for (let i = 13; i >= 0; i--) {
+                    const d = new Date(todayMidnight.getFullYear(), todayMidnight.getMonth(), todayMidnight.getDate() - i);
+                    const key = formatDateKey(d);
+                    const hrs = drives
+                        .filter(entry => entry.date === key)
+                        .reduce((sum, entry) => sum + entry.totalMinutes / 60, 0);
+                    points.push({
+                        label: d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+                        value: Math.round(hrs * 100) / 100
+                    });
+                }
+            } else if (chartMode === 'week') {
+                subtitleEl.textContent = 'Hours driven per week (last 8 weeks)';
+                footnoteEl.textContent = 'Monday – Sunday weekly totals';
+                const currentMonday = getMondayOfWeek(todayMidnight);
+                for (let i = 7; i >= 0; i--) {
+                    const wStart = new Date(currentMonday.getFullYear(), currentMonday.getMonth(), currentMonday.getDate() - (i * 7));
+                    const wEnd = new Date(wStart.getFullYear(), wStart.getMonth(), wStart.getDate() + 7);
+                    const hrs = drives
+                        .filter(entry => {
+                            const ed = parseLocalDate(entry.date);
+                            return ed >= wStart && ed < wEnd;
+                        })
+                        .reduce((sum, entry) => sum + entry.totalMinutes / 60, 0);
+                    points.push({
+                        label: wStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                        value: Math.round(hrs * 100) / 100
+                    });
+                }
+            } else if (chartMode === 'month') {
+                subtitleEl.textContent = 'Hours driven per month (last 6 months)';
+                footnoteEl.textContent = 'Monthly practice totals';
+                for (let i = 5; i >= 0; i--) {
+                    const mDate = new Date(todayMidnight.getFullYear(), todayMidnight.getMonth() - i, 1);
+                    const targetYear = mDate.getFullYear();
+                    const targetMonth = mDate.getMonth();
+                    const hrs = drives
+                        .filter(entry => {
+                            const ed = parseLocalDate(entry.date);
+                            return ed.getFullYear() === targetYear && ed.getMonth() === targetMonth;
+                        })
+                        .reduce((sum, entry) => sum + entry.totalMinutes / 60, 0);
+                    points.push({
+                        label: mDate.toLocaleDateString('en-US', { month: 'short' }),
+                        value: Math.round(hrs * 100) / 100
+                    });
+                }
+            } else if (chartMode === 'total') {
+                subtitleEl.textContent = 'Cumulative hours toward 50-hour goal';
+                footnoteEl.textContent = 'Running total progression over time';
+                if (drives.length === 0) {
+                    points = [
+                        { label: 'Start', value: 0 },
+                        { label: 'Today', value: 0 }
+                    ];
+                } else {
+                    const sorted = [...drives].sort((a, b) => a.date.localeCompare(b.date));
+                    const byDate = {};
+                    sorted.forEach(entry => {
+                        byDate[entry.date] = (byDate[entry.date] || 0) + entry.totalMinutes / 60;
+                    });
+                    let running = 0;
+                    Object.keys(byDate).forEach(dateKey => {
+                        running += byDate[dateKey];
+                        const dObj = parseLocalDate(dateKey);
+                        points.push({
+                            label: dObj.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' }),
+                            value: Math.round(running * 100) / 100
+                        });
+                    });
+                    if (points.length === 1) {
+                        points.unshift({ label: 'Start', value: 0 });
+                    }
+                }
+            }
+
+            const maxVal = Math.max(...points.map(p => p.value), chartMode === 'total' ? 5 : 2);
+            const yMax = Math.ceil(maxVal * 1.15 * 10) / 10;
+            const peakVal = Math.max(...points.map(p => p.value), 0);
+            peakEl.textContent = chartMode === 'total'
+                ? `Cumulative: ${peakVal.toFixed(1)} / 50.0 hrs`
+                : `Peak: ${peakVal.toFixed(1)} hrs`;
+
+            // SVG Coordinate Mapping
+            const padLeft = 38;
+            const padRight = 18;
+            const padTop = 18;
+            const padBottom = 32;
+            const width = 640;
+            const height = 220;
+            const plotW = width - padLeft - padRight;
+            const plotH = height - padTop - padBottom;
+
+            const coords = points.map((pt, idx) => {
+                const x = points.length === 1
+                    ? padLeft + plotW / 2
+                    : padLeft + (idx / (points.length - 1)) * plotW;
+                const y = padTop + plotH - ((pt.value / yMax) * plotH);
+                return { x, y, label: pt.label, value: pt.value };
+            });
+
+            // Horizontal Gridlines (0%, 50%, 100%)
+            const gridSteps = [0, 0.5, 1];
+            const gridSvg = gridSteps.map(step => {
+                const gy = padTop + plotH - (step * plotH);
+                const gVal = (step * yMax).toFixed(1);
+                return `
+                    <line x1="${padLeft}" y1="${gy}" x2="${width - padRight}" y2="${gy}" stroke="#e2e8f0" stroke-dasharray="4 4" stroke-width="1" />
+                    <text x="${padLeft - 8}" y="${gy + 4}" text-anchor="end" fill="#94a3b8" font-size="10" font-weight="600">${gVal}h</text>
+                `;
+            }).join('');
+
+            // Line Path & Area Fill
+            const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(' ');
+            const areaPath = `${linePath} L ${coords[coords.length - 1].x.toFixed(1)} ${(padTop + plotH).toFixed(1)} L ${coords[0].x.toFixed(1)} ${(padTop + plotH).toFixed(1)} Z`;
+
+            // X-Axis Labels (skip crowded labels if > 10 points)
+            const labelStep = points.length > 10 ? 2 : 1;
+            const xLabelsSvg = coords.map((c, i) => {
+                if (i % labelStep !== 0 && i !== coords.length - 1) return '';
+                return `<text x="${c.x.toFixed(1)}" y="${height - 8}" text-anchor="middle" fill="#64748b" font-size="10" font-weight="600">${c.label}</text>`;
+            }).join('');
+
+            // Data Point Dots & Value Labels
+            const dotsSvg = coords.map(c => `
+                <g>
+                    <circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="2" />
+                    ${c.value > 0 ? `<text x="${c.x.toFixed(1)}" y="${(c.y - 9).toFixed(1)}" text-anchor="middle" fill="#1e293b" font-size="10" font-weight="700">${c.value.toFixed(1)}</text>` : ''}
+                </g>
+            `).join('');
+
+            svg.innerHTML = `
+                <defs>
+                    <linearGradient id="driveChartAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+                ${gridSvg}
+                <path d="${areaPath}" fill="url(#driveChartAreaGrad)" />
+                <path d="${linePath}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                ${xLabelsSvg}
+                ${dotsSvg}
+            `;
+        }
+
+        // ==========================================
+        // Weekly Goal Explorer (Arrows + Day/Night + Goal Indicator + Logs)
+        // ==========================================
+        window.changeInspectedWeek = function(delta) {
+            const nextOffset = Math.min(0, inspectedWeekOffset + delta);
+            if (nextOffset === inspectedWeekOffset) return;
+            inspectedWeekOffset = nextOffset;
+            renderInspectedWeekCard(delta > 0 ? 'next' : 'prev');
+        };
+
+        function renderInspectedWeekCard(slideDir = null) {
+            const headerAnim = document.getElementById('inspectedWeekHeaderAnim');
+            const bodyAnim = document.getElementById('inspectedWeekBodyAnim');
+            if (slideDir && headerAnim && bodyAnim) {
+                const animClass = slideDir === 'next' ? 'animate-week-next' : 'animate-week-prev';
+                headerAnim.classList.remove('animate-week-next', 'animate-week-prev');
+                bodyAnim.classList.remove('animate-week-next', 'animate-week-prev');
+                void bodyAnim.offsetWidth; // trigger reflow for smooth replay
+                headerAnim.classList.add(animClass);
+                bodyAnim.classList.add(animClass);
+            }
+
+            const now = new Date();
+            const currentMonday = getMondayOfWeek(now);
+            const targetMonday = new Date(
+                currentMonday.getFullYear(),
+                currentMonday.getMonth(),
+                currentMonday.getDate() + (inspectedWeekOffset * 7)
+            );
+            const nextMonday = new Date(
+                targetMonday.getFullYear(),
+                targetMonday.getMonth(),
+                targetMonday.getDate() + 7
+            );
+            const targetSunday = new Date(nextMonday.getTime() - 86400000);
+
+            // Header Title & Relative Subtitle
+            const startStr = targetMonday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const endStr = targetSunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('inspectedWeekTitle').textContent = `${startStr} – ${endStr}`;
+
+            const relEl = document.getElementById('inspectedWeekRelativeLabel');
+            if (inspectedWeekOffset === 0) {
+                relEl.textContent = 'Current Week';
+            } else if (inspectedWeekOffset === -1) {
+                relEl.textContent = 'Last Week';
+            } else {
+                relEl.textContent = `${Math.abs(inspectedWeekOffset)} Weeks Ago`;
+            }
+
+            // Disable forward arrow when viewing current week
+            document.getElementById('btnNextWeek').disabled = inspectedWeekOffset >= 0;
+
+            // Filter drives for this specific week
+            const weekDrives = drives.filter(d => {
+                const dDate = parseLocalDate(d.date);
+                return dDate >= targetMonday && dDate < nextMonday;
+            });
+
+            const dayMinutes = weekDrives
+                .filter(d => d.type === 'day')
+                .reduce((sum, d) => sum + d.totalMinutes, 0);
+            const nightMinutes = weekDrives
+                .filter(d => d.type === 'night')
+                .reduce((sum, d) => sum + d.totalMinutes, 0);
+
+            const dayHrs = dayMinutes / 60;
+            const nightHrs = nightMinutes / 60;
+            const totalWeekHrs = (dayMinutes + nightMinutes) / 60;
+            const pct = targetWeeklyHours > 0 ? Math.min(100, Math.round((totalWeekHrs / targetWeeklyHours) * 100)) : 100;
+            const goalMet = totalWeekHrs >= targetWeeklyHours;
+
+            document.getElementById('inspectedTotalHours').textContent = totalWeekHrs.toFixed(1);
+            document.getElementById('inspectedGoalTarget').textContent = `/ ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')} hrs`;
+            document.getElementById('inspectedWeekPct').textContent = `${pct}%`;
+            document.getElementById('inspectedDayHours').textContent = `${dayHrs.toFixed(1)} hrs`;
+            document.getElementById('inspectedNightHours').textContent = `${nightHrs.toFixed(1)} hrs`;
+
+            // Goal Met Indicator Badge
+            const badgeEl = document.getElementById('inspectedGoalBadge');
+            if (goalMet) {
+                badgeEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800';
+                badgeEl.innerHTML = `
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Goal Met
+                `;
+            } else if (inspectedWeekOffset === 0) {
+                badgeEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800';
+                badgeEl.textContent = 'In Progress';
+            } else {
+                badgeEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800';
+                badgeEl.textContent = 'Goal Missed';
+            }
+
+            // Render Logs for This Week
+            document.getElementById('inspectedWeekLogCount').textContent = `${weekDrives.length} session${weekDrives.length === 1 ? '' : 's'}`;
+            const listEl = document.getElementById('inspectedWeekLogsList');
+
+            if (weekDrives.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 px-4 border-2 border-dashed border-slate-200 rounded-xl">
+                        <p class="text-xs font-bold text-slate-600">No driving sessions logged this week</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Use the arrows above to browse other weeks.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = weekDrives.map(drive => {
+                const isNight = drive.type === 'night';
+                const badgeClass = isNight
+                    ? 'bg-indigo-950 text-indigo-200 border-indigo-800'
+                    : 'bg-amber-50 text-amber-800 border-amber-200';
+                const iconSvg = isNight
+                    ? `<svg class="w-3.5 h-3.5 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>`
+                    : `<svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path></svg>`;
+
+                return `
+                    <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50/70">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="shrink-0 w-9 h-9 rounded-lg ${isNight ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700'} flex items-center justify-center font-extrabold text-xs">
+                                ${(drive.totalMinutes / 60).toFixed(1)}h
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-sm font-bold text-slate-900">${formatDuration(drive.totalMinutes)}</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${badgeClass}">
+                                        ${iconSvg}
+                                        ${isNight ? 'Night' : 'Day'}
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500 mt-0.5">${formatDisplayDate(drive.date)}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProjection(totalHoursLogged) {
+            const hoursRemaining = Math.max(0, GOAL_TOTAL_HOURS - totalHoursLogged);
+            const headlineEl = document.getElementById('projectionHeadline');
+            const detailEl = document.getElementById('projectionDetail');
+            const avgWeeklyRateEl = document.getElementById('avgWeeklyRate');
+            const estFinishDateEl = document.getElementById('estFinishDate');
+
+            // Calculate actual average pace across active weeks (Monday-based)
+            let actualAvgPerWeek = 0;
+            if (drives.length > 0) {
+                const weekTotals = {};
+                drives.forEach(item => {
+                    const mondayKey = formatDateKey(getMondayOfWeek(parseLocalDate(item.date)));
+                    weekTotals[mondayKey] = (weekTotals[mondayKey] || 0) + (item.totalMinutes / 60);
+                });
+                const activeWeeks = Object.keys(weekTotals).length;
+                actualAvgPerWeek = totalHoursLogged / activeWeeks;
+            }
+            avgWeeklyRateEl.textContent = `${actualAvgPerWeek.toFixed(1)} hrs/wk`;
+
+            if (hoursRemaining === 0) {
+                headlineEl.textContent = '🎉 Congratulations! You have completed all 50 hours!';
+                detailEl.textContent = 'All goal requirements met. You are ready for your driving test!';
+                estFinishDateEl.textContent = 'Completed';
+                return;
+            }
+
+            // Calculate weeks & exact finish date using user's target weekly goal
+            const weeksNeeded = hoursRemaining / targetWeeklyHours;
+            const daysNeeded = Math.ceil(weeksNeeded * 7);
+
+            const estDate = new Date();
+            estDate.setDate(estDate.getDate() + daysNeeded);
+            const estDateStr = estDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            headlineEl.textContent = `At ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')} hrs/week, you'll finish in ~${Math.ceil(weeksNeeded)} weeks (${estDateStr}).`;
+
+            if (drives.length === 0) {
+                detailEl.textContent = `You have ${hoursRemaining.toFixed(1)} hours left. Log your first drive below to track your actual weekly pace!`;
+            } else {
+                const paceComparison = actualAvgPerWeek >= targetWeeklyHours
+                    ? `You're currently averaging ${actualAvgPerWeek.toFixed(1)} hrs/week — right on or ahead of your ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')}h target!`
+                    : `You're currently averaging ${actualAvgPerWeek.toFixed(1)} hrs/week. Aim for ${targetWeeklyHours.toFixed(1).replace(/\.0$/, '')} hrs/week to hit this finish date.`;
+                detailEl.textContent = `${hoursRemaining.toFixed(1)} hours remaining. ${paceComparison}`;
+            }
+
+            estFinishDateEl.textContent = estDateStr;
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('driveListContainer');
+            const filtered = drives.filter(d => currentFilter === 'all' || d.type === currentFilter);
+
+            document.getElementById('historyCountSubtitle').textContent = `${drives.length} session${drives.length === 1 ? '' : 's'} recorded`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 px-4 border-2 border-dashed border-slate-200 rounded-2xl">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700">No drives logged here yet</p>
+                        <p class="text-xs text-slate-500 mt-1">Use the form on the left to record your driving practice.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(drive => {
+                const isNight = drive.type === 'night';
+                const badgeClass = isNight
+                    ? 'bg-indigo-950 text-indigo-200 border-indigo-800'
+                    : 'bg-amber-50 text-amber-800 border-amber-200';
+                const iconSvg = isNight
+                    ? `<svg class="w-3.5 h-3.5 text-indigo-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>`
+                    : `<svg class="w-3.5 h-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path></svg>`;
+
+                return `
+                    <div class="group flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:shadow-sm transition">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="shrink-0 w-10 h-10 rounded-xl ${isNight ? 'bg-indigo-100 text-indigo-700' : 'bg-blue-100 text-blue-700'} flex items-center justify-center font-extrabold text-xs">
+                                ${(drive.totalMinutes / 60).toFixed(1)}h
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-sm font-bold text-slate-900">${formatDuration(drive.totalMinutes)}</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border ${badgeClass}">
+                                        ${iconSvg}
+                                        ${isNight ? 'Night' : 'Day'}
+                                    </span>
+                                </div>
+                                <p class="text-xs font-medium text-slate-500 mt-0.5">${formatDisplayDate(drive.date)}</p>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="deleteDrive('${drive.id}')" title="Delete entry"
+                            class="shrink-0 p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==========================================
+        // Toast Notification Helper
+        // ==========================================
+        let toastTimeoutId = null;
+
+        function showToast(message) {
+            const banner = document.getElementById('toastBanner');
+            const msgEl = document.getElementById('toastMessage');
+            if (!banner || !msgEl) return;
+
+            msgEl.textContent = message;
+            banner.classList.remove('hidden');
+
+            if (toastTimeoutId) {
+                clearTimeout(toastTimeoutId);
+            }
+            toastTimeoutId = setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
